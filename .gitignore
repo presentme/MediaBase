@@ -12,7 +12,6 @@ Icon?
 #Flex/Flash
 
 # Build Dir
-#bin/
 bin-release/
 bin-debug/
 out/
