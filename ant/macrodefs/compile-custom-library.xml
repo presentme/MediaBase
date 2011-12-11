@@ -50,17 +50,14 @@
 					<include name="libs/player/playerglobal.swc"/>
 					<include name="libs/datavisualization.swc" />
 					<include name="libs/framework.swc" />
+					<include name="libs/spark.swc" />
+					<include name="libs/mx/mx.swc" />
 					<include name="libs/rpc.swc" />
 					<include name="libs/flex.swc" />
 					<include name="locale/${locale}/framework_rb.swc" />
 					<include name="locale/${locale}/rpc_rb.swc" />
 					<include name="locale/${locale}/datavisualization_rb.swc" />
 				</compiler.external-library-path>
-
-				<!-- Force include the adobe.crypto Utility classes -->
-				<include-sources dir="${lib.adobe}">
-					<include name="**/*.as"/>
-				</include-sources>
 					
 				<!-- Force include the Newtriks Utilities classes --> 
 				<include-sources dir="${lib.newtriks}">
