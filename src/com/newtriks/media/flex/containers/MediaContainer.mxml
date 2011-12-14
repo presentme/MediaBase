@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2011 Simon Bailey <simon@newtriks.com>
+  ~
+  ~ Permission is hereby granted to use, modify, and distribute this file
+  ~ in accordance with the terms of the license agreement located at the
+  ~ following url: http://www.newtriks.com/LICENSE.html
+  -->
+<containers:VideoContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:containers="com.newtriks.media.flex.containers.*"
+                           implements="com.newtriks.media.core.interfaces.IVideoContainer">
+    <fx:Script><![CDATA[
+        import com.newtriks.media.*;
+        import com.newtriks.media.core.VideoConfigurationVO;
+        import com.newtriks.media.interfaces.IMediaBase;
+
+        public function get streamName():String {
+            return video.streamName;
+        }
+
+        public function publish():void {
+            if (!video) {
+                throw Error("A core object has not been created, check the startup logic");
+            }
+            MediaBase(video).publish();
+        }
+
+        public function unpublish():void {
+            MediaBase(video).unpublish();
+        }
+
+        public function togglePlayback():void {
+            video.stream.togglePause();
+        }
+
+        override public function setup():void {
+            if (!video) {
+                video = new MediaBase(new VideoConfigurationVO(baseType)
+                        .aspectRatio(aspectRatio).client(client)
+                        .layoutCallbackHandler(layoutHandler)
+                        .metaDataReceived(metaDataHandler)
+                        .logCallbackHandler(logHandler)
+                        .quality(quality)
+                        .bandwidth(bandwidth)
+                        .microphoneRate(microphoneRate)
+                        .microphoneSilenceLevel(microphoneSilenceLevel)
+                        .fps(fps));
+                addElement(video);
+            }
+            if (video.connection && video.connection.connected) return;
+            video.connection = connection;
+        }
+
+        public function loadStream(video_url:String):void {
+            video.streamName = video_url;
+        }
+
+        //***********
+        // OVERRIDES
+        //***********
+
+        private var _base:IMediaBase;
+        override public function get base():IMediaBase {
+            return _base;
+        }
+
+        override public function set base(value:IMediaBase):void {
+            _base = value;
+            _base.container=this;
+        }
+        ]]></fx:Script>
+</containers:VideoContainer>

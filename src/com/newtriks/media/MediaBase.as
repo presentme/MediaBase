@@ -7,8 +7,8 @@
  */
 package com.newtriks.media
 {
-    import com.newtriks.core.VideoBase;
-    import com.newtriks.core.VideoConfigurationVO;
+    import com.newtriks.media.core.VideoBase;
+    import com.newtriks.media.core.VideoConfigurationVO;
     import com.newtriks.utils.CreateUUID;
 
     import flash.events.ActivityEvent;

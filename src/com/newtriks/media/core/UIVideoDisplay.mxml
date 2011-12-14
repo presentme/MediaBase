@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2011 Simon Bailey <simon@newtriks.com>
+  ~
+  ~ Permission is hereby granted to use, modify, and distribute this file
+  ~ in accordance with the terms of the license agreement located at the
+  ~ following url: http://www.newtriks.com/LICENSE.html
+  -->
+
+<mx:UIComponent xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:mx="library://ns.adobe.com/flex/mx">
+    <fx:Metadata>
+        [Event(name="stateChange", type="mx.events.VideoEvent")]
+    </fx:Metadata>
+    <fx:Script>
+		<![CDATA[
+        import mx.events.VideoEvent;
+
+        public static const WIDE_SCREEN_RECORDING_WIDTH:int=512;
+        public static const WIDE_SCREEN_RECORDING_HEIGHT:int=288;
+        public static const STRETCH_SCREEN_RECORDING_WIDTH:int=384;
+        public static const STRETCH_SCREEN_RECORDING_HEIGHT:int=288;
+
+        private var _video:Video;
+        public function get video():Video
+        {
+            return _video;
+        }
+
+        public function set video(value:Video):void
+        {
+            if(_video==value)
+            {
+                return;
+            }
+            _video=value;
+        }
+
+        private var _netStream:NetStream;
+        public function get netStream():NetStream
+        {
+            return _netStream;
+        }
+
+        public function set netStream(value:NetStream):void
+        {
+            if(_netStream==value)
+            {
+                return;
+            }
+            _netStream=value;
+            if(video==null)
+            {
+                return;
+            }
+            video.attachNetStream(value);
+        }
+
+        private var _smoothing:Boolean=true;
+        public function get smoothing():Boolean
+        {
+            return _smoothing;
+        }
+
+        public function set smoothing(value:Boolean):void
+        {
+            _smoothing=video.smoothing=value;
+        }
+
+        public function get videoWidth():int
+        {
+            return video.videoWidth;
+        }
+
+        public function get videoHeight():int
+        {
+            return video.videoHeight;
+        }
+
+        private var _dimensions:Object;
+        public function set dimensions(value:Object):void
+        {
+            _dimensions=value;
+        }
+
+        public function attachCamera(camera:Camera):void
+        {
+            video.attachCamera(camera);
+        }
+
+        public function detachCamera():void
+        {
+            video.attachCamera(null);
+            video.clear();
+        }
+
+        public function destroy():void
+        {
+            video.removeEventListener(mx.events.VideoEvent.STATE_CHANGE, videoStateChange);
+            video.clear();
+            this.removeChild(video);
+            video=null;
+        }
+
+        protected override function createChildren():void
+        {
+            super.createChildren();
+            if(video)
+            {
+                return;
+            }
+            video=new Video();
+            video.addEventListener(mx.events.VideoEvent.STATE_CHANGE, videoStateChange);
+            video.smoothing=smoothing;
+            addChild(video);
+        }
+
+        protected override function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+        {
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+            if(!video)
+            {
+                return;
+            }
+            var _viewPort:Rectangle=getVideoRect(video.videoWidth, video.videoHeight);
+            video.width=_viewPort.width;
+            video.height=_viewPort.height;
+            video.x=_viewPort.x, video.y=_viewPort.y;
+        }
+
+        private function getVideoRect(_width:uint, _height:uint):Rectangle
+        {
+            var videoWidth:uint=(!_width)?_dimensions.width : _width;
+            var videoHeight:uint=(!_height)?_dimensions.height : _height;
+            var scaling:Number=Math.min(this.width/videoWidth, this.height/videoHeight);
+            videoWidth*=scaling, videoHeight*=scaling;
+            var posX:uint=this.width-videoWidth>>1;
+            var posY:uint=this.height-videoHeight>>1;
+            var videoRect:Rectangle=new Rectangle(0, 0, 0, 0);
+            videoRect.x=posX;
+            videoRect.y=posY;
+            videoRect.width=videoWidth;
+            videoRect.height=videoHeight;
+            return videoRect;
+        }
+
+        protected function videoStateChange(event:mx.events.VideoEvent):void
+        {
+            dispatchEvent(event);
+        }
+        ]]>
+	</fx:Script>
+</mx:UIComponent>
