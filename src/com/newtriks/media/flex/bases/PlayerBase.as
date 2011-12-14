@@ -224,7 +224,6 @@ public class PlayerBase implements IPlayerBase {
     protected function updatedMeta(val:Object):void {
         container.metaDataHandler = null;
         trace("Received MetaData, duration: " + val.duration);
-        if (!autoplay) return;
         setFirstPlaybackStartPosition();
     }
 
