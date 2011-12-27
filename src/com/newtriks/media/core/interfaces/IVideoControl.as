@@ -6,20 +6,18 @@
  * following url: http://www.newtriks.com/LICENSE.html
  */
 
-package com.newtriks.media.core.interfaces
-{
-    import mx.core.IVisualElement;
+package com.newtriks.media.core.interfaces {
+import mx.core.IVisualElement;
 
-    public interface IVideoControl extends IVisualElement
-    {
-        function play(name:String, ...rest):void
+public interface IVideoControl extends IVisualElement {
+    function play(name:String, ...rest):void
 
-        function pause():void
+    function pause():void
 
-        function resume():void
+    function resume():void
 
-        function seek(time:Number):void
+    function seek(time:Number):void
 
-        function get time():Number
-    }
+    function get time():Number
+}
 }

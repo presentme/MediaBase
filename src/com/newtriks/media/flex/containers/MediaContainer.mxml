@@ -66,7 +66,7 @@
 
         override public function set base(value:IMediaBase):void {
             _base = value;
-            _base.container=this;
+            _base.container = this;
         }
         ]]></fx:Script>
 </containers:VideoContainer>

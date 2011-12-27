@@ -8,7 +8,6 @@
 package com.newtriks.media.interfaces {
 import com.newtriks.media.core.interfaces.IVideoContainer;
 
-import flash.events.Event;
 import flash.net.NetConnection;
 import flash.net.NetStream;
 

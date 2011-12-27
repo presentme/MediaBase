@@ -6,8 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 package com.newtriks.media.bases {
-import com.newtriks.media.*;
 import com.newtriks.enums.MediaStateEnum;
+import com.newtriks.media.*;
 import com.newtriks.media.core.VideoBase;
 import com.newtriks.media.core.interfaces.IVideoContainer;
 import com.newtriks.media.flex.containers.MediaContainer;

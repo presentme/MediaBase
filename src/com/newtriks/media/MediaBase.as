@@ -261,7 +261,7 @@ public class MediaBase extends VideoBase {
         }
         if (_microphone || _camera) {
             log("Publishing recorded stream: ".concat(streamName));
-            stream.publish("mp4:".concat(streamName, ".f4v"), (append ? "append" : "record"));
+            stream.publish("mp4:".concat(streamName), (append ? "append" : "record"));
         }
         dispatchEvent(new Event(MediaBase.START, true));
     }
