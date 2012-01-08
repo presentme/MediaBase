@@ -97,11 +97,10 @@ public class PlayerBase implements IPlayerBase {
         return container.video.streamName;
     }
 
-    public function startPlaying(url:String, cue:Number = 0):void {
+    public function startPlaying(url:String, cue:Number = -1):void {
         currentPlaybackTime.dispatch(cue);
-        var stream:String = (container.video.streamName) ? streamName : url;
         _cueSeek = cue;
-        if (stream.length) {
+        if (container.video.streamName!=url) {
             seekAsynchronous(url);
         }
         else {
@@ -156,6 +155,11 @@ public class PlayerBase implements IPlayerBase {
     }
 
     protected function seekSynchronous():void {
+        if(_cueSeek==-1)
+        {
+            resumeStream();
+            return;
+        }
         container.video.pause();
         seek(_cueSeek);
     }
@@ -163,6 +167,7 @@ public class PlayerBase implements IPlayerBase {
     protected function loadStream(url:String):void {
         try {
             container.video.play(url);
+            addPlayHandlers();
         }
         catch (error:Error) {
             streamErrorHandler(null);
@@ -191,12 +196,14 @@ public class PlayerBase implements IPlayerBase {
     }
 
     protected function addPlayHandlers():void {
+        trace("Adding");
         MediaContainer(container).removeEventListener(Event.ENTER_FRAME, handleCurrentStreamTime);
         container.addEventListener(MediaBase.PLAY_START, handleStreamStart);
         container.addEventListener(MediaBase.END, handleStreamEnd);
     }
 
     protected function removePlayHandlers(ended:Boolean = false):void {
+        trace("removing");
         MediaContainer(container).stage.removeEventListener(Event.ENTER_FRAME, handleCurrentStreamTime);
         container.removeEventListener(MediaBase.PLAY_START, handleStreamStart);
         container.removeEventListener(MediaBase.END, handleStreamEnd);
@@ -209,7 +216,7 @@ public class PlayerBase implements IPlayerBase {
 
     // Helpers
     protected function get streamHasPlayedToEnd():Boolean {
-        //trace("ENDED: "+NumberUtil.roundNumber(stream.streamTime)+":"+NumberUtil.roundNumber(_duration)+"   "+Boolean(NumberUtil.roundNumber(stream.time)>=NumberUtil.roundNumber(_duration-0.1)));
+        trace("ENDED: "+NumberUtil.roundNumber(stream.time)+":"+NumberUtil.roundNumber(_duration)+"   "+Boolean(NumberUtil.roundNumber(stream.time)>=NumberUtil.roundNumber(_duration-0.1)));
         return Boolean(NumberUtil.roundNumber(stream.time) >= NumberUtil.roundNumber(_duration - 0.1));
     }
 
@@ -223,11 +230,13 @@ public class PlayerBase implements IPlayerBase {
 
     protected function updatedMeta(val:Object):void {
         container.metaDataHandler = null;
+        if(isNaN(_duration)) duration = val.duration;
         trace("Received MetaData, duration: " + val.duration);
         setFirstPlaybackStartPosition();
     }
 
     protected function handleStreamStart(event:Event):void {
+        trace("Handle stream start");
         currentMediaStatus = MediaStateEnum.PlaybackStarted;
         if (!MediaContainer(container).stage.hasEventListener(Event.ENTER_FRAME))
             MediaContainer(container).stage.addEventListener(Event.ENTER_FRAME, handleCurrentStreamTime);

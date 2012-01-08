@@ -53,8 +53,6 @@ public interface IVideoBase extends IVideoControl {
 
     function set bufferTime(time:Number):void
 
-    function get bufferEmpty():Boolean
-
     function attachCamera():void
 
     function unAttachCamera():void

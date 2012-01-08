@@ -176,7 +176,7 @@ package com.newtriks.media.core
             return _duration;
         }
 
-        private var _bufferTime:Number=1; // buffer!
+        private var _bufferTime:Number=2; // buffer!
         public function get bufferTime():Number
         {
             return _bufferTime;
@@ -185,12 +185,6 @@ package com.newtriks.media.core
         public function set bufferTime(value:Number):void
         {
             _bufferTime=value;
-        }
-
-        private var _bufferEmpty:Boolean;
-        public function get bufferEmpty():Boolean
-        {
-            return _bufferEmpty;
         }
 
         private var _cameraBroadcasting:Boolean=false;
@@ -335,21 +329,6 @@ package com.newtriks.media.core
         protected function handleNetStreamStatus(event:NetStatusEvent):void
         {
             _status=event.info.code;
-            switch (_status)
-            {
-                case BUFFER_FLUSH:
-                    _bufferEmpty=true;
-                    break;
-                case BUFFER_FULL:
-                    _bufferEmpty=false;
-                    break;
-                case BUFFER_EMPTY:
-                    // ignore
-                    break;
-                default:
-                    log("netstream status: ".concat(_status));
-                    break;
-            }
         }
 
         protected function videoDisplayStateChange(event:VideoEvent):void

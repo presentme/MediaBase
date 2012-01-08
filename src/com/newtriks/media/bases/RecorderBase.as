@@ -146,7 +146,7 @@ public class RecorderBase implements IMediaBase {
     }
 
     protected function handleCameraError(event:Event):void {
-        // Not much to do here at the moment
+        log("Error loading camera");
     }
 
     //******************

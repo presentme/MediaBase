@@ -104,12 +104,6 @@ package com.newtriks.media
                 case VideoBase.START_RECORDING:
                     sendMetadata();
                     break;
-                case VideoBase.STOP_RECORDING:
-                    if(bufferEmpty)
-                    {
-                        dispatchEvent(new Event(MediaBase.TOGGLE));
-                    }
-                    break;
                 case VideoBase.UNPUBLISHED:
                     log("Recording successfully written data");
                     /**
@@ -131,7 +125,7 @@ package com.newtriks.media
                 case STOPPED:
                     if(stream.bufferLength<=stream.bufferTime)
                     {
-                        dispatchEvent(new Event(MediaBase.END, true));
+                        //dispatchEvent(new Event(MediaBase.END, true));
                     }
                     break;
                 case STARTING:
@@ -145,6 +139,12 @@ package com.newtriks.media
                     break;
                 case NO_STREAM:
                     dispatchEvent(new Event(MediaBase.STREAM_ERROR, true));
+                    break;
+                case BUFFER_FULL:
+                    stream.bufferTime = 15;
+                    break;
+                case BUFFER_EMPTY:
+                    stream.bufferTime = 2; // Todo
                     break;
             }
         }
