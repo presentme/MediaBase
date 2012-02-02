@@ -31,8 +31,6 @@ public interface IMediaBase {
 
     function get streamName():String;
 
-    function get stream():NetStream;
-
     function audioOnly(value:Boolean):void;
 }
 }

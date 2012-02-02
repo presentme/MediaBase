@@ -39,6 +39,8 @@ public interface IVideoBase extends IVideoControl {
 
     function get video():Video
 
+    function get autoReload():Boolean;
+
     function get streamName():String
 
     function set streamName(val:String):void

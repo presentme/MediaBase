@@ -57,6 +57,18 @@ public interface IVideoContainer extends IEventDispatcher {
 
     function set video(value:IVideoBase):void;
 
+    function set autoReload(value:Boolean):void;
+
+    function get autoReload():Boolean;
+
+    function set timeLimit(value:int):void;
+
+    function get timeLimit():int;
+
+    function set countdown(value:int):void;
+
+    function get countdown():int;
+
     function get layoutHandler():Function;
 
     function set layoutHandler(value:Function):void;

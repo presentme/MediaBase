@@ -114,6 +114,21 @@ package com.newtriks.media.core
             return data._microphoneSilenceLevel;
         }
 
+        public function get autoReload():Boolean
+        {
+            return data._autoReload;
+        }
+
+        public function get timeLimit():int
+        {
+            return data._timeLimit;
+        }
+
+        public function get _countdown():int
+        {
+            return data._countdown;
+        }
+
         private var _connection:NetConnection;
         public function get connection():NetConnection
         {
@@ -228,6 +243,7 @@ package com.newtriks.media.core
 
         public function resize(w:Number, h:Number):void
         {
+            if(_videoDisplay==null) return;
             _videoDisplay.width=w;
             _videoDisplay.height=h;
         }
@@ -242,11 +258,12 @@ package com.newtriks.media.core
 
         public function destroy():void
         {
+            if(!_videoDisplay&&!_stream) return;
             log("performing cleanup");
             _videoDisplay.destroy();
-            _stream.removeEventListener(NetStatusEvent.NET_STATUS, handleNetStreamStatus);
             if(_stream!=null)
             {
+                _stream.removeEventListener(NetStatusEvent.NET_STATUS, handleNetStreamStatus);
                 _stream.close();
             }
             _stream=null;
@@ -299,9 +316,9 @@ package com.newtriks.media.core
 
         protected function buildVideoDisplay():void
         {
-            log("building UIVideoDisplay");
             if(!_videoDisplay)
             {
+                log("building UIVideoDisplay");
                 _videoDisplay=new UIVideoDisplay();
                 _videoDisplay.dimensions=dimensions;
                 _videoDisplay.addEventListener(VideoEvent.STATE_CHANGE, videoDisplayStateChange);

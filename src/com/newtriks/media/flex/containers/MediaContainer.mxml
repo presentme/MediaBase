@@ -18,14 +18,15 @@
             return video.streamName;
         }
 
-        public function publish():void {
+        public function publish(streamName:String):void {
             if (!video) {
                 throw Error("A core object has not been created, check the startup logic");
             }
-            MediaBase(video).publish();
+            MediaBase(video).publish(streamName);
         }
 
         public function unpublish():void {
+            if(!video) return;
             MediaBase(video).unpublish();
         }
 
@@ -44,7 +45,10 @@
                         .bandwidth(bandwidth)
                         .microphoneRate(microphoneRate)
                         .microphoneSilenceLevel(microphoneSilenceLevel)
-                        .fps(fps));
+                        .fps(fps)
+                        .autoReload(autoReload)
+                        .timeLimit(timeLimit)
+                        .countdown(countdown));
                 addElement(video);
             }
             if (video.connection && video.connection.connected) return;
