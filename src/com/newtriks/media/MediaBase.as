@@ -88,7 +88,6 @@ public class MediaBase extends VideoBase
         {
             attachCamera();
             setupMicrophone();
-            bufferTime=20;
         }
     }
 
@@ -169,17 +168,28 @@ public class MediaBase extends VideoBase
      * CLASS METHODS
      */
 
-    override public function attachCamera():void
+    protected function get camDimensions():Object
     {
-        log("setting up camera");
+        if(camWidth)
+        {
+            return {width:camWidth, height:camHeight};
+        }
+        return {width:dimensions.width, height:dimensions.height};
+    }
+
+    override public function attachCamera(index:String=""):void
+    {
+        log("setting up camera "+index);
         if(!_camera)
         {
             try
             {
-                _camera=Camera.getCamera();
+                if(index.length) _camera=Camera.getCamera(index);
+                else _camera=Camera.getCamera();
+
                 if(_camera)
                 {
-                    _camera.setMode(dimensions.width, dimensions.height, fps, false);
+                    _camera.setMode(camDimensions.width, camDimensions.height, fps, false);
                     _camera.setQuality(bandwidth, quality);
                     _camera.setKeyFrameInterval(fps);
                     if(_camera.muted)
@@ -206,6 +216,11 @@ public class MediaBase extends VideoBase
                 dispatchEvent(new Event(MediaBase.CAMERA_ERROR, true));
             }
         }
+        else if(!_isRecording)
+        {
+            unAttachCamera();
+            attachCamera(index);
+        }
     }
 
     override public function unAttachCamera():void
@@ -218,17 +233,19 @@ public class MediaBase extends VideoBase
         _camera=null;
     }
 
-    protected function setupMicrophone():void
+    override public function setupMicrophone(index:int=-1):void
     {
+        if(_isRecording) return;
         log("setting up microphone");
         try
         {
-            _microphone=Microphone.getMicrophone();
+            if(index>=0) _microphone=Microphone.getMicrophone(index);
+            else _microphone=Microphone.getMicrophone();
             /**
              * Speex is generally preferred over Nellymoser
              * but FFMPeg doesn't like it
              */
-            _microphone.codec=SoundCodec.SPEEX;
+            _microphone.codec=SoundCodec.NELLYMOSER;
             _microphone.rate=microphoneRate;					// set audio to a more than average quality
             _microphone.setSilenceLevel(microphoneSilenceLevel); 		// prevent mic from cutting sound off when no sound is detected
             log("success > microphone setup");
@@ -256,8 +273,8 @@ public class MediaBase extends VideoBase
     {
         var metaData:Object=new Object();
         metaData.title=streamName;
-        metaData.width=dimensions.width;
-        metaData.height=dimensions.height;
+        metaData.width=camDimensions.width;
+        metaData.height=camDimensions.height;
         metaData.hasKeyframes=true;
         metaData.hasMetadata=true;
         metaData.hasVideo=true;
@@ -267,10 +284,13 @@ public class MediaBase extends VideoBase
     public function publish(name:String):void
     {
         if(name=="")
+        {
             streamName="stream_".concat(CreateUUID.createUUID());
+        }
         else
+        {
             streamName=name;
-
+        }
         if(_microphone)
         {
             log("Attaching Microphone to NetStream");
@@ -287,7 +307,10 @@ public class MediaBase extends VideoBase
             stream.publish(streamName, (append?"append":"record"));
         }
         dispatchEvent(new Event(MediaBase.START, true));
+        _isRecording=true;
     }
+
+    private var _isRecording:Boolean;
 
     public function unpublish():void
     {
@@ -308,6 +331,7 @@ public class MediaBase extends VideoBase
     {
         log("Stopping recording");
         stream.publish(null);
+        _isRecording=false;
     }
 
     public function buildNewStream():void
@@ -317,7 +341,10 @@ public class MediaBase extends VideoBase
 
     public function disconnectCameraAndMicrophone():void
     {
-        if(!stream) return;
+        if(!stream)
+        {
+            return;
+        }
         log("Disconnecting Camera and Microphone from stream");
         stream.attachCamera(null);
         stream.attachAudio(null);
@@ -352,10 +379,13 @@ public class MediaBase extends VideoBase
             _camera.addEventListener(ActivityEvent.ACTIVITY, firstCameraActivity);
             log("success > camera allowed and setup");
         }
-        else if(event.code=="Camera.Muted")
+        else
         {
-            this.dispatchEvent(new Event(MediaBase.CAMERA_ACCESS_DENIED, true));
-            log("error > camera denied");
+            if(event.code=="Camera.Muted")
+            {
+                this.dispatchEvent(new Event(MediaBase.CAMERA_ACCESS_DENIED, true));
+                log("error > camera denied");
+            }
         }
     }
 

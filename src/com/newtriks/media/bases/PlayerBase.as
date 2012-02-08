@@ -126,7 +126,7 @@ public class PlayerBase implements IPlayerBase
 
     public function startPlaying(url:String, cue:Number=-1):void
     {
-        currentPlaybackTime.dispatch(cue);
+        //currentPlaybackTime.dispatch(cue);
         _cueSeek=cue;
         try
         {
@@ -136,6 +136,7 @@ public class PlayerBase implements IPlayerBase
             }
             else
             {
+                if(streamHasPlayedToEnd) _cueSeek=0;
                 seekSynchronous();
             }
         }
@@ -227,7 +228,7 @@ public class PlayerBase implements IPlayerBase
     {
         try
         {
-            container.video.play(url);
+            container.video.play(url, 0.1);
             addPlayHandlers();
         }
         catch(error:Error)
@@ -302,10 +303,7 @@ public class PlayerBase implements IPlayerBase
     //*****************
     protected function updatedMeta(val:Object):void
     {
-        if(isNaN(_duration))
-        {
-            duration=val.duration;
-        }
+        duration=val.duration;
         setFirstPlaybackStartPosition();
     }
 

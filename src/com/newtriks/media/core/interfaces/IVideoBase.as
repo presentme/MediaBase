@@ -19,15 +19,15 @@ public interface IVideoBase extends IVideoControl {
 
     function get client():Object
 
-    function get bandwidth():uint;
+    function get bandwidth():int;
 
-    function get quality():uint;
+    function get quality():int;
 
-    function get microphoneRate():uint;
+    function get microphoneRate():int;
 
-    function get microphoneSilenceLevel():uint;
+    function get microphoneSilenceLevel():int;
 
-    function get fps():uint;
+    function get fps():int;
 
     function get connection():NetConnection
 
@@ -51,13 +51,13 @@ public interface IVideoBase extends IVideoControl {
 
     function get duration():Number
 
-    function get bufferTime():Number
+    function get bufferTime():int
 
-    function set bufferTime(time:Number):void
-
-    function attachCamera():void
+    function attachCamera(index:String=""):void
 
     function unAttachCamera():void
+
+    function setupMicrophone(index:int=-1):void;
 
     function set cameraBroadcasting(value:Boolean):void
 

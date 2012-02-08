@@ -128,14 +128,14 @@
             video.x=_viewPort.x, video.y=_viewPort.y;
         }
 
-        private function getVideoRect(_width:uint, _height:uint):Rectangle
+        private function getVideoRect(_width:int, _height:int):Rectangle
         {
-            var videoWidth:uint=(!_width)?_dimensions.width : _width;
-            var videoHeight:uint=(!_height)?_dimensions.height : _height;
+            var videoWidth:int=(!_width)?_dimensions.width : _width;
+            var videoHeight:int=(!_height)?_dimensions.height : _height;
             var scaling:Number=Math.min(this.width/videoWidth, this.height/videoHeight);
             videoWidth*=scaling, videoHeight*=scaling;
-            var posX:uint=this.width-videoWidth>>1;
-            var posY:uint=this.height-videoHeight>>1;
+            var posX:int=this.width-videoWidth>>1;
+            var posY:int=this.height-videoHeight>>1;
             var videoRect:Rectangle=new Rectangle(0, 0, 0, 0);
             videoRect.x=posX;
             videoRect.y=posY;

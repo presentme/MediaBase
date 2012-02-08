@@ -222,6 +222,39 @@ public class VideoContainer extends SkinnableContainer implements IVideoContaine
         _fps=value;
     }
 
+    private var _camWidth:Number;
+    public function get camWidth():Number
+    {
+        return _camWidth;
+    }
+
+    public function set camWidth(value:Number):void
+    {
+        _camWidth=value;
+    }
+
+    private var _camHeight:Number;
+    public function get camHeight():Number
+    {
+        return _camHeight;
+    }
+
+    public function set camHeight(value:Number):void
+    {
+        _camHeight=value;
+    }
+
+    private var _bufferTime:uint=20;
+    public function get bufferTime():uint
+    {
+        return _bufferTime;
+    }
+
+    public function set bufferTime(value:uint):void
+    {
+        _bufferTime=value;
+    }
+
     private var _autoReload:Boolean=false;
     public function get autoReload():Boolean
     {

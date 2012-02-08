@@ -54,7 +54,7 @@ package com.newtriks.media.core
         public var onPlayStatus:Function;
         public var onLastSecond:Function;
         public var onTimeCoordInfo:Function;
-        private static const MAX_CONNECTION_ATTEMPTS:uint=3;
+        private static const MAX_CONNECTION_ATTEMPTS:int=3;
         // Private class variables
         private var _soundTransform:SoundTransform;
         private var _connectionTimeout:Timer;
@@ -89,27 +89,42 @@ package com.newtriks.media.core
             return data._client||=this;
         }
 
-        public function get bandwidth():uint
+        public function get bandwidth():int
         {
             return data._bandwidth;
         }
 
-        public function get quality():uint
+        public function get quality():int
         {
             return data._quality;
         }
 
-        public function get fps():uint
+        public function get fps():int
         {
             return data._fps;
         }
 
-        public function get microphoneRate():uint
+        public function get bufferTime():int
+        {
+            return data._bufferTime;
+        }
+
+        public function get camWidth():Number
+        {
+            return data._camWidth;
+        }
+
+        public function get camHeight():Number
+        {
+            return data._camHeight;
+        }
+
+        public function get microphoneRate():int
         {
             return data._microphoneRate;
         }
 
-        public function get microphoneSilenceLevel():uint
+        public function get microphoneSilenceLevel():int
         {
             return data._microphoneSilenceLevel;
         }
@@ -191,17 +206,6 @@ package com.newtriks.media.core
             return _duration;
         }
 
-        private var _bufferTime:Number=2; // buffer!
-        public function get bufferTime():Number
-        {
-            return _bufferTime;
-        }
-
-        public function set bufferTime(value:Number):void
-        {
-            _bufferTime=value;
-        }
-
         private var _cameraBroadcasting:Boolean=false;
         public function set cameraBroadcasting(value:Boolean):void
         {
@@ -227,8 +231,8 @@ package com.newtriks.media.core
         public function get dimensions():Object
         {
             var normalAspectRatio:Boolean=aspectRatio==VideoBase.STRETCH_SCREEN;
-            var width:uint=normalAspectRatio?UIVideoDisplay.STRETCH_SCREEN_RECORDING_WIDTH : UIVideoDisplay.WIDE_SCREEN_RECORDING_WIDTH;
-            var height:uint=normalAspectRatio?UIVideoDisplay.STRETCH_SCREEN_RECORDING_HEIGHT : UIVideoDisplay.WIDE_SCREEN_RECORDING_HEIGHT;
+            var width:int=normalAspectRatio?UIVideoDisplay.STRETCH_SCREEN_RECORDING_WIDTH : UIVideoDisplay.WIDE_SCREEN_RECORDING_WIDTH;
+            var height:int=normalAspectRatio?UIVideoDisplay.STRETCH_SCREEN_RECORDING_HEIGHT : UIVideoDisplay.WIDE_SCREEN_RECORDING_HEIGHT;
             return {"width":width, "height":height};
         }
 
@@ -243,16 +247,19 @@ package com.newtriks.media.core
 
         public function resize(w:Number, h:Number):void
         {
-            if(_videoDisplay==null) return;
             _videoDisplay.width=w;
             _videoDisplay.height=h;
         }
 
-        public function attachCamera():void
+        public function attachCamera(index:String=""):void
         {
         }
 
         public function unAttachCamera():void
+        {
+        }
+
+        public function setupMicrophone(index:int=-1):void
         {
         }
 

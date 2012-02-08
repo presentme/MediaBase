@@ -147,6 +147,16 @@ public class RecorderBase implements IMediaBase
         MediaContainer(container).visible=!value;
     }
 
+    public function loadSpecificCamera(index:String):void
+    {
+        container.video.attachCamera(index);
+    }
+
+    public function loadSpecificMicrophone(index:int):void
+    {
+        container.video.setupMicrophone(index);
+    }
+
     //***************************
     //  Internal Getters/Setters
     //***************************

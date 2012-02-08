@@ -46,6 +46,9 @@
                         .microphoneRate(microphoneRate)
                         .microphoneSilenceLevel(microphoneSilenceLevel)
                         .fps(fps)
+                        .camWidth(camWidth)
+                        .camHeight(camHeight)
+                        .bufferTime(bufferTime)
                         .autoReload(autoReload)
                         .timeLimit(timeLimit)
                         .countdown(countdown));

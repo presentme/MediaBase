@@ -46,41 +46,65 @@ public class VideoConfigurationVO
         return this;
     }
 
-    internal var _bandwidth:uint;
+    internal var _bandwidth:int;
 
-    public function bandwidth(value:uint):VideoConfigurationVO
+    public function bandwidth(value:int):VideoConfigurationVO
     {
         _bandwidth=value;
         return this;
     }
 
-    internal var _quality:uint;
+    internal var _quality:int;
 
-    public function quality(value:uint):VideoConfigurationVO
+    public function quality(value:int):VideoConfigurationVO
     {
         _quality=value;
         return this;
     }
 
-    internal var _fps:uint;
+    internal var _fps:int;
 
-    public function fps(value:uint):VideoConfigurationVO
+    public function fps(value:int):VideoConfigurationVO
     {
         _fps=value;
         return this;
     }
 
-    internal var _microphoneRate:uint;
+    internal var _bufferTime:int;
 
-    public function microphoneRate(value:uint):VideoConfigurationVO
+    public function bufferTime(value:int):VideoConfigurationVO
+    {
+        _bufferTime=value;
+        return this;
+    }
+
+    internal var _camWidth:Number;
+
+    public function camWidth(value:Number):VideoConfigurationVO
+    {
+        _camWidth=value;
+        return this;
+    }
+
+    internal var _camHeight:Number;
+
+    public function camHeight(value:Number):VideoConfigurationVO
+    {
+        _camHeight=value;
+        return this;
+    }
+
+    internal var _microphoneRate:int;
+
+    public function microphoneRate(value:int):VideoConfigurationVO
     {
         _microphoneRate=value;
         return this;
     }
 
-    internal var _microphoneSilenceLevel:uint;
+    internal var _microphoneSilenceLevel:int;
 
-    public function microphoneSilenceLevel(value:uint):VideoConfigurationVO
+    public function microphoneSilenceLevel(value:int):VideoConfigurationVO
     {
         _microphoneSilenceLevel=value;
         return this;
@@ -112,10 +136,10 @@ public class VideoConfigurationVO
 
     internal var _countdown:int;
 
-        public function countdown(value:int):VideoConfigurationVO
-        {
-            _countdown=value;
-            return this;
-        }
+    public function countdown(value:int):VideoConfigurationVO
+    {
+        _countdown=value;
+        return this;
+    }
 }
 }
