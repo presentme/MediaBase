@@ -247,6 +247,7 @@ package com.newtriks.media.core
 
         public function resize(w:Number, h:Number):void
         {
+            if(_videoDisplay==null) return;
             _videoDisplay.width=w;
             _videoDisplay.height=h;
         }
