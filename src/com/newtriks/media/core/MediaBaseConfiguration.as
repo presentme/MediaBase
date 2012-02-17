@@ -121,5 +121,12 @@ public class MediaBaseConfiguration {
         _soundCodec = value;
         return this;
     }
+
+    internal var _appendRecording:Boolean = false;
+
+    public function appendRecording(value:Boolean):MediaBaseConfiguration {
+        _appendRecording = value;
+        return this;
+    }
 }
 }

@@ -51,9 +51,11 @@ public class MediaBase extends Group {
     public static const START_RECORDING:String = "NetStream.Record.Start";
     public static const STOP_RECORDING:String = "NetStream.Record.Stop";
     public static const INVALID_SEEK:String = "NetStream.Seek.InvalidTime";
-    // VIDEO CONSTANTS
+    // CAMERA EVENTS
+    public static const CAM_MUTED:String = "Camera.Muted";
+    public static const CAM_UNMUTED:String = "Camera.Unmuted";
+    // VIDEO EVENT CONSTANTS
     public static const READY:String = "MediaBase::READY";
-    public static const TOGGLE:String = "Recorder::TOGGLE";
     public static const START:String = "Recorder::START";
     public static const STOP:String = "Recorder::STOP";
     public static const VIDEO:String = "Recorder::VIDEO";
@@ -61,8 +63,8 @@ public class MediaBase extends Group {
     public static const CAMERA_LOADED:String = "Recorder::CAMERA_LOADED";
     public static const CAMERA_ERROR:String = "Recorder::CAMERA_ERROR";
     public static const CAMERA_ACCESS_DENIED:String = "Recorder::CAMERA_ACCESS_DENIED";
-    public static const END:String = "Player::END";
     public static const PLAY_START:String = "Player::START";
+    public static const END:String = "Player::END";
     public static const SEEK_COMPLETE:String = "Player::SEEK_COMPLETE";
     public static const STREAM_ERROR:String = "Player::ERROR";
     // Net callbacks
@@ -150,19 +152,10 @@ public class MediaBase extends Group {
     private var _streamName:String;
     public function set streamName(val:String):void {
         _streamName = val;
-        if (baseType != PLAYER) {
-            return;
-        }
-        stream.play(val, 0);
     }
 
     public function get streamName():String {
         return _streamName;
-    }
-
-    private var _status:String;
-    public function get status():String {
-        return _status;
     }
 
     private var _duration:Number;
@@ -181,24 +174,11 @@ public class MediaBase extends Group {
         dispatchEvent(new Event(type, true));
     }
 
-    public function get cameraBroadcasting():Boolean {
-        return _cameraBroadcasting;
-    }
-
     protected function get camDimensions():Object {
         if (configuration._camWidth) {
             return {width:configuration._camWidth, height:configuration._camHeight};
         }
         return {width:dimensions.width, height:dimensions.height};
-    }
-
-    private var _append:Boolean = false;
-    public function get append():Boolean {
-        return _append;
-    }
-
-    public function set append(value:Boolean):void {
-        _append = value;
     }
 
     public function get dimensions():Object {
@@ -282,8 +262,8 @@ public class MediaBase extends Group {
             if (index >= 0) _microphone = Microphone.getMicrophone(index);
             else _microphone = Microphone.getMicrophone();
             _microphone.codec = configuration._soundCodec;
-            _microphone.rate = configuration._microphoneRate;					// set audio to a more than average quality
-            _microphone.setSilenceLevel(configuration._microphoneSilenceLevel); 		// prevent mic from cutting sound off when no sound is detected
+            _microphone.rate = configuration._microphoneRate;
+            _microphone.setSilenceLevel(configuration._microphoneSilenceLevel);
             log("success > microphone setup");
         }
         catch (error:Error) {
@@ -357,12 +337,14 @@ public class MediaBase extends Group {
     }
 
     public function publish(name:String):void {
+        if(_isRecording) return;
         if (name == "") {
             streamName = "stream_".concat(CreateUUID.createUUID());
         }
         else {
             streamName = name;
         }
+        // Send metadata at this point, l8r and browser will crash!
         sendMetadata();
         if (_microphone) {
             log("Attaching Microphone to NetStream");
@@ -374,7 +356,7 @@ public class MediaBase extends Group {
         }
         if (_microphone || _camera) {
             log("Publishing recorded stream: ".concat(streamName));
-            stream.publish(streamName, (append ? "append" : "record"));
+            stream.publish(streamName, (configuration._appendRecording ? "append" : "record"));
         }
         dispatchEvent(new Event(START, true));
         _isRecording = true;
@@ -425,7 +407,7 @@ public class MediaBase extends Group {
      */
 
     protected function handleNetStreamStatus(event:NetStatusEvent):void {
-        _status = event.info.code;
+        var status:String = event.info.code;
         switch (status) {
             case UNPUBLISHED:
                 log("Recording successfully written data");
@@ -482,14 +464,14 @@ public class MediaBase extends Group {
     }
 
     protected function statusHandler(event:StatusEvent):void {
-        if (event.code == "Camera.Unmuted") {
+        if (event.code == CAM_UNMUTED) {
             cameraBroadcasting = true;
             attachCameraToDisplay();
             _camera.addEventListener(ActivityEvent.ACTIVITY, firstCameraActivity);
             log("success > camera allowed and setup");
         }
         else {
-            if (event.code == "Camera.Muted") {
+            if (event.code == CAM_MUTED) {
                 this.dispatchEvent(new Event(CAMERA_ACCESS_DENIED, true));
                 log("error > camera denied");
             }
