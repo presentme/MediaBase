@@ -84,7 +84,6 @@ public class PlayerBase extends MediaBase {
     }
 
     public function startPlaying(url:String, cue:Number = -1):void {
-        //currentPlaybackTime.dispatch(cue);
         _cueSeek = cue;
         if (streamName != url) {
             seekAsynchronous(url);

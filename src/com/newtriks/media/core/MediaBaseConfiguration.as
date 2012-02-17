@@ -1,5 +1,7 @@
 /** @author: Simon Bailey <simon@newtriks.com> */
 package com.newtriks.media.core {
+import flash.media.SoundCodec;
+
 public class MediaBaseConfiguration {
     internal var _aspectRatio:String = MediaBase.STRETCH_SCREEN;
 
@@ -29,28 +31,28 @@ public class MediaBaseConfiguration {
         return this;
     }
 
-    internal var _bandwidth:int=32768;
+    internal var _bandwidth:int = 32768;
 
     public function bandwidth(value:int):MediaBaseConfiguration {
         _bandwidth = value;
         return this;
     }
 
-    internal var _quality:int=0;
+    internal var _quality:int = 0;
 
     public function quality(value:int):MediaBaseConfiguration {
         _quality = value;
         return this;
     }
 
-    internal var _fps:int=15;
+    internal var _fps:int = 15;
 
     public function fps(value:int):MediaBaseConfiguration {
         _fps = value;
         return this;
     }
 
-    internal var _bufferTime:int=20;
+    internal var _bufferTime:int = 20;
 
     public function bufferTime(value:int):MediaBaseConfiguration {
         _bufferTime = value;
@@ -71,14 +73,14 @@ public class MediaBaseConfiguration {
         return this;
     }
 
-    internal var _microphoneRate:int=22;
+    internal var _microphoneRate:int = 22;
 
     public function microphoneRate(value:int):MediaBaseConfiguration {
         _microphoneRate = value;
         return this;
     }
 
-    internal var _microphoneSilenceLevel:int=0;
+    internal var _microphoneSilenceLevel:int = 0;
 
     public function microphoneSilenceLevel(value:int):MediaBaseConfiguration {
         _microphoneSilenceLevel = value;
@@ -92,24 +94,31 @@ public class MediaBaseConfiguration {
         return this;
     }
 
-    internal var _autoReload:Boolean=false;
+    internal var _autoReload:Boolean = false;
 
     public function autoReload(value:Boolean):MediaBaseConfiguration {
         _autoReload = value;
         return this;
     }
 
-    internal var _timeLimit:int=0;
+    internal var _timeLimit:int = 0;
 
     public function timeLimit(value:int):MediaBaseConfiguration {
         _timeLimit = value;
         return this;
     }
 
-    internal var _countdown:int=0;
+    internal var _countdown:int = 0;
 
     public function countdown(value:int):MediaBaseConfiguration {
         _countdown = value;
+        return this;
+    }
+
+    internal var _soundCodec:String = SoundCodec.NELLYMOSER;
+
+    public function soundCodec(value:String):MediaBaseConfiguration {
+        _soundCodec = value;
         return this;
     }
 }

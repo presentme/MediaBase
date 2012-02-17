@@ -15,15 +15,12 @@ import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.events.NetStatusEvent;
 import flash.events.StatusEvent;
-import flash.events.TimerEvent;
 import flash.media.Camera;
 import flash.media.Microphone;
-import flash.media.SoundCodec;
 import flash.media.SoundTransform;
 import flash.media.Video;
 import flash.net.NetConnection;
 import flash.net.NetStream;
-import flash.utils.Timer;
 import flash.utils.clearInterval;
 import flash.utils.setInterval;
 
@@ -55,7 +52,7 @@ public class MediaBase extends Group {
     public static const STOP_RECORDING:String = "NetStream.Record.Stop";
     public static const INVALID_SEEK:String = "NetStream.Seek.InvalidTime";
     // VIDEO CONSTANTS
-    public static const READY:String = ":READY";
+    public static const READY:String = "MediaBase::READY";
     public static const TOGGLE:String = "Recorder::TOGGLE";
     public static const START:String = "Recorder::START";
     public static const STOP:String = "Recorder::STOP";
@@ -74,10 +71,8 @@ public class MediaBase extends Group {
     public var onPlayStatus:Function;
     public var onLastSecond:Function;
     public var onTimeCoordInfo:Function;
-    private static const MAX_CONNECTION_ATTEMPTS:int = 3;
     // Private class variables
     private var _soundTransform:SoundTransform;
-    private var _connectionTimeout:Timer;
     private var _configuration:MediaBaseConfiguration;
     private var _camera:Camera;
     private var _microphone:Microphone;
@@ -222,6 +217,7 @@ public class MediaBase extends Group {
     }
 
     public function resize(w:Number, h:Number):void {
+        if (!_videoDisplay) return;
         _videoDisplay.width = w;
         _videoDisplay.height = h;
     }
@@ -285,11 +281,7 @@ public class MediaBase extends Group {
         try {
             if (index >= 0) _microphone = Microphone.getMicrophone(index);
             else _microphone = Microphone.getMicrophone();
-            /**
-             * Speex is generally preferred over Nellymoser
-             * but FFMPeg doesn't like it
-             */
-            _microphone.codec = SoundCodec.NELLYMOSER;
+            _microphone.codec = configuration._soundCodec;
             _microphone.rate = configuration._microphoneRate;					// set audio to a more than average quality
             _microphone.setSilenceLevel(configuration._microphoneSilenceLevel); 		// prevent mic from cutting sound off when no sound is detected
             log("success > microphone setup");
@@ -314,41 +306,21 @@ public class MediaBase extends Group {
         _videoDisplay = null;
     }
 
-    protected function init():void {
-        //log("init");
-    }
-
     protected function connectNetStream():void {
-        if (_connection.connected) {
-            log("connecting NetStream");
-            _stream = new NetStream(_connection);
-            _stream.addEventListener(NetStatusEvent.NET_STATUS, handleNetStreamStatus);
-            _stream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncStreamErrorHandler);
-            _stream.addEventListener(IOErrorEvent.IO_ERROR, IOStreamErrorHandler);
-            _stream.client = configuration._client;
-            onMetaData = metaDataHandler;
-            onCuePoint = cuePointHandler;
-            onPlayStatus = playStatusHandler;
-            onTimeCoordInfo = handleTimeCoordInfo;
-            onLastSecond = handleLastSecond;
-            _stream.bufferTime = configuration._bufferTime;
-            _soundTransform = new SoundTransform();
-            buildVideoDisplay();
-        }
-        else {
-            _connectionTimeout = new Timer(250, MAX_CONNECTION_ATTEMPTS);
-            _connectionTimeout.addEventListener(TimerEvent.TIMER, timerHandler, false, 0, true);
-            _connectionTimeout.start();
-        }
-    }
-
-    private function timerHandler(event:TimerEvent):void {
-        log("Connection attempt: " + _connectionTimeout.currentCount.toString());
-        if (_connection.connected) {
-            connectNetStream();
-            _connectionTimeout.stop();
-            _connectionTimeout.removeEventListener(TimerEvent.TIMER, timerHandler);
-        }
+        log("connecting NetStream");
+        _stream = new NetStream(_connection);
+        _stream.addEventListener(NetStatusEvent.NET_STATUS, handleNetStreamStatus);
+        _stream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, asyncStreamErrorHandler);
+        _stream.addEventListener(IOErrorEvent.IO_ERROR, IOStreamErrorHandler);
+        _stream.client = configuration._client;
+        onMetaData = metaDataHandler;
+        onCuePoint = cuePointHandler;
+        onPlayStatus = playStatusHandler;
+        onTimeCoordInfo = handleTimeCoordInfo;
+        onLastSecond = handleLastSecond;
+        _stream.bufferTime = configuration._bufferTime;
+        _soundTransform = new SoundTransform();
+        buildVideoDisplay();
     }
 
     protected function buildVideoDisplay():void {
@@ -391,6 +363,7 @@ public class MediaBase extends Group {
         else {
             streamName = name;
         }
+        sendMetadata();
         if (_microphone) {
             log("Attaching Microphone to NetStream");
             stream.attachAudio(_microphone);
@@ -454,9 +427,6 @@ public class MediaBase extends Group {
     protected function handleNetStreamStatus(event:NetStatusEvent):void {
         _status = event.info.code;
         switch (status) {
-            case START_RECORDING:
-                sendMetadata();
-                break;
             case UNPUBLISHED:
                 log("Recording successfully written data");
                 /**

@@ -159,6 +159,7 @@ public class RecorderBase extends MediaBase {
         timeLimitCountdown.removeEventListener(CountdownTimer.COUNT, timeLimitCountdownHandler);
         timeLimitCountdown.removeEventListener(CountdownTimer.COMPLETE, timeLimitCountdownCompleteHandler);
         timeLimitCountdown.stopCountDown();
+        timeLimitCountdown=null;
     }
 
     /**
@@ -221,11 +222,11 @@ public class RecorderBase extends MediaBase {
 
     protected function recordingCountdownHandler(event:Event):void {
         countdownCountSignal.dispatch(recordingCountdownTimer.count);
-        if (recordingCountdownTimer.count == 1) publish(streamName);
     }
 
     protected function recordingCountdownCompleteHandler(event:Event):void {
-        stopRecordingCountdownTimer();
+        recordingCountdownTimer=null;
+        publish(streamName);
     }
 }
 }
