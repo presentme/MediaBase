@@ -66,7 +66,7 @@ public class RecorderBase extends MediaBase {
     //******
     override public function set connection(value:NetConnection):void {
         super.connection = value;
-        setMediaConnection(value);
+        setMediaConnection();
     }
 
     public function startRecording(_streamName:String = ""):void {
@@ -107,7 +107,18 @@ public class RecorderBase extends MediaBase {
         setupMicrophone(index);
     }
 
-    //***************************
+    override public function destroy():void {
+        super.destroy();
+        container.removeEventListener(VIDEO, handleAudioOnly);
+        container.removeEventListener(AUDIO, handleAudioOnly);
+        container.removeEventListener(STOP, handleRecordingStopped);
+        container.removeEventListener(START, handleRecordingStarted);
+        container.removeEventListener(CAMERA_LOADED, handleCameraLoaded);
+        container.removeEventListener(CAMERA_ERROR, handleCameraError);
+        container.removeEventListener(CAMERA_ACCESS_DENIED, handleCameraAccessDenied);
+    }
+
+//***************************
     //  Internal Getters/Setters
     //***************************
     protected function set currentMediaStatus(value:MediaStateEnum):void {
@@ -117,19 +128,7 @@ public class RecorderBase extends MediaBase {
     //****************
     //  Class Methods
     //****************
-    protected function setMediaConnection(nc:NetConnection):void {
-        if(nc==null)
-        {
-            container.removeEventListener(VIDEO, handleAudioOnly);
-            container.removeEventListener(AUDIO, handleAudioOnly);
-            container.removeEventListener(STOP, handleRecordingStopped);
-            container.removeEventListener(START, handleRecordingStarted);
-            container.removeEventListener(CAMERA_LOADED, handleCameraLoaded);
-            container.removeEventListener(CAMERA_ERROR, handleCameraError);
-            container.removeEventListener(CAMERA_ACCESS_DENIED, handleCameraAccessDenied);
-            return;
-        }
-        log("Building Recorder UI...");
+    protected function setMediaConnection():void {
         container.addEventListener(VIDEO, handleAudioOnly);
         container.addEventListener(AUDIO, handleAudioOnly);
         container.addEventListener(STOP, handleRecordingStopped);
@@ -197,6 +196,7 @@ public class RecorderBase extends MediaBase {
         if (timeLimit) {
             stopTimeLimitTimer();
         }
+        destroy();
     }
 
     protected function handleCameraLoaded(event:Event):void {

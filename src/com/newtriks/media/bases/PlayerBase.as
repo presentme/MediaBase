@@ -208,6 +208,9 @@ public class PlayerBase extends MediaBase {
     override public function destroy():void {
         if(stream) stopPlaying();
         super.destroy();
+        container.stage.removeEventListener(Event.ENTER_FRAME, handleCurrentStreamTime);
+        container.removeEventListener(MediaBase.PLAY_START, handleStreamStart);
+        container.removeEventListener(MediaBase.END, handleStreamEnd);
     }
 
     //*****************

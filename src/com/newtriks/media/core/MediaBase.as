@@ -272,8 +272,11 @@ public class MediaBase extends Group {
     }
 
     public function destroy():void {
-        disconnectCameraAndMicrophone();
-        unAttachCamera();
+        if(baseType==MediaBase.RECORDER)
+        {
+            disconnectCameraAndMicrophone();
+            unAttachCamera();
+        }
         if (!_videoDisplay && !_stream) return;
         log("performing cleanup");
         _videoDisplay.destroy();
@@ -417,14 +420,8 @@ public class MediaBase extends Group {
                  * generate an errant core/audio packet with a large
                  * time code.  So need to create a new stream each time
                  * we publish.  Wait till we have this event from the
-                 * old netstream first.
+                 * old netstream first. STOP event below will destroy!
                  */
-                if (configuration._autoReload) {
-                    buildNewStream();
-                }
-                else {
-                    destroy();
-                }
                 // Dispatch to switch state and perform cleanup
                 dispatchEvent(new Event(STOP, true));
                 break;
