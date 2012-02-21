@@ -13,6 +13,7 @@ import com.newtriks.media.core.MediaBaseConfiguration;
 import com.newtriks.utils.NumberUtil;
 
 import flash.events.Event;
+import flash.events.NetStatusEvent;
 import flash.net.NetConnection;
 
 import org.osflash.signals.Signal;
@@ -101,6 +102,14 @@ public class PlayerBase extends MediaBase {
         currentMediaStatus = MediaStateEnum.PlaybackPaused;
     }
 
+    public function stopPlaying():void {
+        if (container.stage == null) {
+            return;
+        }
+        removePlayHandlers(true);
+        seek(0);
+    }
+
     public function audioOnly(value:Boolean):void {
         container.visible = !value;
     }
@@ -162,14 +171,6 @@ public class PlayerBase extends MediaBase {
         addPlayHandlers();
     }
 
-    protected function stopPlaying():void {
-        if (container.stage == null) {
-            return;
-        }
-        removePlayHandlers(true);
-        seek(0);
-    }
-
     protected function dispatchCurrentTime():void {
         currentPlaybackTime.dispatch(time);
     }
@@ -206,11 +207,44 @@ public class PlayerBase extends MediaBase {
     //************
 
     override public function destroy():void {
-        if(stream) stopPlaying();
+        if (stream) stopPlaying();
         super.destroy();
         container.stage.removeEventListener(Event.ENTER_FRAME, handleCurrentStreamTime);
         container.removeEventListener(MediaBase.PLAY_START, handleStreamStart);
         container.removeEventListener(MediaBase.END, handleStreamEnd);
+    }
+
+    override protected function handleNetStreamStatus(event:NetStatusEvent):void {
+        super.handleNetStreamStatus(event);
+        var status:String = event.info.code;
+        switch (status) {
+            case STARTING:
+                dispatchEvent(new Event(PLAY_START, true));
+                break;
+            case INVALID_SEEK:
+            {
+                stream.seek(event.info.details);
+                return;
+            }
+                break;
+            case NO_STREAM:
+                dispatchEvent(new Event(STREAM_ERROR, true));
+                break;
+            case BUFFER_FULL:
+                stream.bufferTime = 15;
+                break;
+            case BUFFER_EMPTY:
+                stream.bufferTime = 2;
+                break;
+            case STOPPED:
+                if (stream.bufferLength <= stream.bufferTime) {
+                    //dispatchEvent(new Event(END, true));
+                }
+                break;
+            case COMPLETE:
+                dispatchEvent(new Event(END, true));
+                break;
+        }
     }
 
     //*****************

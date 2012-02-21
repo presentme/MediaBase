@@ -63,6 +63,9 @@ public class MediaBase extends Group {
     public static const CAMERA_LOADED:String = "Recorder::CAMERA_LOADED";
     public static const CAMERA_ERROR:String = "Recorder::CAMERA_ERROR";
     public static const CAMERA_ACCESS_DENIED:String = "Recorder::CAMERA_ACCESS_DENIED";
+    public static const BUFFER_FLUSH_START:String = "Recorder::BUFFER_FLUSH_START";
+    public static const BUFFER_FLUSHING:String = "Recorder::BUFFER_FLUSHING";
+    public static const BUFFER_FLUSH_COMPLETE:String = "Recorder::BUFFER_FLUSH_COMPLETE";
     public static const PLAY_START:String = "Player::START";
     public static const END:String = "Player::END";
     public static const SEEK_COMPLETE:String = "Player::SEEK_COMPLETE";
@@ -301,7 +304,6 @@ public class MediaBase extends Group {
         onPlayStatus = playStatusHandler;
         onTimeCoordInfo = handleTimeCoordInfo;
         onLastSecond = handleLastSecond;
-        _stream.bufferTime = configuration._bufferTime;
         _soundTransform = new SoundTransform();
         buildVideoDisplay();
     }
@@ -318,7 +320,6 @@ public class MediaBase extends Group {
             // Ready to update layout
             updateLayout();
         }
-        dispatchEvent(new Event(READY, true));
         if (baseType != MediaBase.RECORDER) {
             resize(this.width, this.height);
         }
@@ -326,6 +327,7 @@ public class MediaBase extends Group {
             attachCamera();
             setupMicrophone();
         }
+        dispatchEvent(new Event(READY, true));
     }
 
     protected function sendMetadata():void {
@@ -347,8 +349,10 @@ public class MediaBase extends Group {
         else {
             streamName = name;
         }
-        // Send metadata at this point, l8r and browser will crash!
-        sendMetadata();
+        if (_microphone || _camera) {
+            log("Publishing recorded stream: ".concat(streamName));
+            stream.publish(streamName, (configuration._appendRecording ? "append" : "record"));
+        }
         if (_microphone) {
             log("Attaching Microphone to NetStream");
             stream.attachAudio(_microphone);
@@ -357,20 +361,17 @@ public class MediaBase extends Group {
             log("Attaching Camera to NetStream");
             stream.attachCamera(_camera);
         }
-        if (_microphone || _camera) {
-            log("Publishing recorded stream: ".concat(streamName));
-            stream.publish(streamName, (configuration._appendRecording ? "append" : "record"));
-        }
         dispatchEvent(new Event(START, true));
         _isRecording = true;
+        sendMetadata();
     }
 
     private var _isRecording:Boolean;
 
     public function unpublish():void {
-        disconnectCameraAndMicrophone();
         var buffLen:Number = stream.bufferLength;
         if (buffLen > 0) {
+            dispatchEvent(new Event(MediaBase.BUFFER_FLUSH_START, true));
             _flushVideoBufferTimer = setInterval(flushVideoBuffer, 250);
             log("Flushing buffer.....");
         }
@@ -379,7 +380,7 @@ public class MediaBase extends Group {
         }
     }
 
-    public function stopRecording():void {
+    protected function stopRecording():void {
         log("Stopping recording");
         stream.publish(null);
         _isRecording = false;
@@ -412,45 +413,8 @@ public class MediaBase extends Group {
     protected function handleNetStreamStatus(event:NetStatusEvent):void {
         var status:String = event.info.code;
         switch (status) {
-            case UNPUBLISHED:
-                log("Recording successfully written data");
-                /**
-                 * Flash client has problem when you try to reuse a
-                 * NetStream object to publish core and it tends to
-                 * generate an errant core/audio packet with a large
-                 * time code.  So need to create a new stream each time
-                 * we publish.  Wait till we have this event from the
-                 * old netstream first. STOP event below will destroy!
-                 */
-                // Dispatch to switch state and perform cleanup
-                dispatchEvent(new Event(STOP, true));
-                break;
-            /*case STOPPED:*/
-            case COMPLETE:
-                dispatchEvent(new Event(END, true));
-                break;
-            case STOPPED:
-                if (stream.bufferLength <= stream.bufferTime) {
-                    //dispatchEvent(new Event(END, true));
-                }
-                break;
-            case STARTING:
-                dispatchEvent(new Event(PLAY_START, true));
-                break;
-            case INVALID_SEEK:
-            {
-                stream.seek(event.info.details);
-                return;
-            }
-                break;
-            case NO_STREAM:
-                dispatchEvent(new Event(STREAM_ERROR, true));
-                break;
-            case BUFFER_FULL:
-                stream.bufferTime = 15;
-                break;
-            case BUFFER_EMPTY:
-                stream.bufferTime = 2;
+            case START_RECORDING:
+                stream.bufferTime = configuration._bufferTime;
                 break;
         }
     }
@@ -486,12 +450,15 @@ public class MediaBase extends Group {
      * publishing stream.
      */
     protected function flushVideoBuffer():void {
+        if(!stream) return;
         var buffLen:Number = stream.bufferLength;
-        //trace("Buffer flushing, length:"+buffLen);
         if (!buffLen) {
             clearInterval(_flushVideoBufferTimer);
             _flushVideoBufferTimer = 0;
+            dispatchEvent(new Event(MediaBase.BUFFER_FLUSH_COMPLETE, true));
             stopRecording();
+        } else {
+            dispatchEvent(new Event(MediaBase.BUFFER_FLUSHING, true));
         }
     }
 

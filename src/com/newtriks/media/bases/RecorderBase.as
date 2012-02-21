@@ -12,6 +12,7 @@ import com.newtriks.media.core.MediaBaseConfiguration;
 import com.newtriks.utils.CountdownTimer;
 
 import flash.events.Event;
+import flash.events.NetStatusEvent;
 import flash.net.NetConnection;
 
 import org.osflash.signals.Signal;
@@ -61,6 +62,11 @@ public class RecorderBase extends MediaBase {
         return _cameraAccessDeniedSignal ||= new Signal();
     }
 
+    private var _bufferFlushStatusSignal:Signal;
+    public function get bufferFlushStatusSignal():Signal {
+        return _bufferFlushStatusSignal ||= new Signal(String, Number);
+    }
+
     //******
     //  API
     //******
@@ -77,7 +83,7 @@ public class RecorderBase extends MediaBase {
             startRecordingCountdownTimer();
     }
 
-    override public function stopRecording():void {
+    override protected function stopRecording():void {
         super.stopRecording();
         if (countdown) stopRecordingCountdownTimer();
     }
@@ -116,13 +122,40 @@ public class RecorderBase extends MediaBase {
         container.removeEventListener(CAMERA_LOADED, handleCameraLoaded);
         container.removeEventListener(CAMERA_ERROR, handleCameraError);
         container.removeEventListener(CAMERA_ACCESS_DENIED, handleCameraAccessDenied);
+        container.removeEventListener(BUFFER_FLUSH_START, handleBufferStatus);
+        container.removeEventListener(BUFFER_FLUSHING, handleBufferStatus);
+        container.removeEventListener(BUFFER_FLUSH_COMPLETE, handleBufferStatus);
     }
 
-//***************************
+    //***************************
     //  Internal Getters/Setters
     //***************************
     protected function set currentMediaStatus(value:MediaStateEnum):void {
         mediaStatus.dispatch(value);
+    }
+
+    //************
+    //  Overrides
+    //************
+
+    override protected function handleNetStreamStatus(event:NetStatusEvent):void {
+        super.handleNetStreamStatus(event);
+        var status:String = event.info.code;
+        switch (status) {
+            case UNPUBLISHED:
+                log("Recording successfully written data");
+                /**
+                 * Flash client has problem when you try to reuse a
+                 * NetStream object to publish core and it tends to
+                 * generate an errant core/audio packet with a large
+                 * time code.  So need to create a new stream each time
+                 * we publish.  Wait till we have this event from the
+                 * old netstream first. STOP event below will destroy
+                 * and perform cleanup!
+                 */
+                dispatchEvent(new Event(STOP, true));
+                break;
+        }
     }
 
     //****************
@@ -136,6 +169,9 @@ public class RecorderBase extends MediaBase {
         container.addEventListener(CAMERA_LOADED, handleCameraLoaded);
         container.addEventListener(CAMERA_ERROR, handleCameraError);
         container.addEventListener(CAMERA_ACCESS_DENIED, handleCameraAccessDenied);
+        container.addEventListener(BUFFER_FLUSH_START, handleBufferStatus);
+        container.addEventListener(BUFFER_FLUSHING, handleBufferStatus);
+        container.addEventListener(BUFFER_FLUSH_COMPLETE, handleBufferStatus);
     }
 
     protected function handleAudioOnly(event:Event):void {
@@ -158,7 +194,7 @@ public class RecorderBase extends MediaBase {
         timeLimitCountdown.removeEventListener(CountdownTimer.COUNT, timeLimitCountdownHandler);
         timeLimitCountdown.removeEventListener(CountdownTimer.COMPLETE, timeLimitCountdownCompleteHandler);
         timeLimitCountdown.stopCountDown();
-        timeLimitCountdown=null;
+        timeLimitCountdown = null;
     }
 
     /**
@@ -193,7 +229,7 @@ public class RecorderBase extends MediaBase {
 
     protected function handleRecordingStopped(event:Event):void {
         currentMediaStatus = MediaStateEnum.RecordStopped;
-        if (timeLimit) {
+        if (timeLimit && timeLimitCountdown) {
             stopTimeLimitTimer();
         }
         destroy();
@@ -225,8 +261,12 @@ public class RecorderBase extends MediaBase {
     }
 
     protected function recordingCountdownCompleteHandler(event:Event):void {
-        recordingCountdownTimer=null;
+        recordingCountdownTimer = null;
         publish(streamName);
+    }
+
+    protected function handleBufferStatus(event:Event):void {
+        bufferFlushStatusSignal.dispatch(event.type, stream.bufferLength);
     }
 }
 }
