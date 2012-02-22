@@ -82,6 +82,7 @@ public class MediaBase extends Group {
     private var _camera:Camera;
     private var _microphone:Microphone;
     private var _flushVideoBufferTimer:Number = 0;
+    private var _mediaAttachedToStream:Boolean;
 
     public function MediaBase(configuration:MediaBaseConfiguration) {
         if (configuration.client == null) {
@@ -275,7 +276,7 @@ public class MediaBase extends Group {
     }
 
     public function destroy():void {
-        if(baseType==MediaBase.RECORDER)
+        if(baseType==MediaBase.RECORDER&&_mediaAttachedToStream)
         {
             disconnectCameraAndMicrophone();
             unAttachCamera();
@@ -286,6 +287,7 @@ public class MediaBase extends Group {
         if (_stream != null) {
             _stream.removeEventListener(NetStatusEvent.NET_STATUS, handleNetStreamStatus);
             _stream.close();
+            //_stream.dispose();
         }
         _stream = null;
         this.removeElement(_videoDisplay);
@@ -364,11 +366,15 @@ public class MediaBase extends Group {
         dispatchEvent(new Event(START, true));
         _isRecording = true;
         sendMetadata();
+        _mediaAttachedToStream=true;
     }
 
     private var _isRecording:Boolean;
 
     public function unpublish():void {
+        trace("CHECKING ** BUFFER ** "+stream.bufferLength);
+        disconnectCameraAndMicrophone();
+        unAttachCamera();
         var buffLen:Number = stream.bufferLength;
         if (buffLen > 0) {
             dispatchEvent(new Event(MediaBase.BUFFER_FLUSH_START, true));
@@ -397,6 +403,7 @@ public class MediaBase extends Group {
         log("Disconnecting Camera and Microphone from stream");
         stream.attachCamera(null);
         stream.attachAudio(null);
+        _mediaAttachedToStream=false;
     }
 
     protected function log(msg:String):void {

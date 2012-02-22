@@ -83,6 +83,11 @@ public class RecorderBase extends MediaBase {
             startRecordingCountdownTimer();
     }
 
+    override public function unpublish():void {
+        super.unpublish();
+        if (countdown) stopRecordingCountdownTimer();
+    }
+
     override protected function stopRecording():void {
         super.stopRecording();
         if (countdown) stopRecordingCountdownTimer();
@@ -191,6 +196,7 @@ public class RecorderBase extends MediaBase {
     }
 
     protected function stopTimeLimitTimer():void {
+        if(timeLimitCountdown==null) return;
         timeLimitCountdown.removeEventListener(CountdownTimer.COUNT, timeLimitCountdownHandler);
         timeLimitCountdown.removeEventListener(CountdownTimer.COMPLETE, timeLimitCountdownCompleteHandler);
         timeLimitCountdown.stopCountDown();
@@ -210,6 +216,7 @@ public class RecorderBase extends MediaBase {
     }
 
     protected function stopRecordingCountdownTimer():void {
+        if(recordingCountdownTimer==null) return;
         recordingCountdownTimer.removeEventListener(CountdownTimer.COUNT, recordingCountdownHandler);
         recordingCountdownTimer.removeEventListener(CountdownTimer.COMPLETE, recordingCountdownCompleteHandler);
         recordingCountdownTimer.stopCountDown();
