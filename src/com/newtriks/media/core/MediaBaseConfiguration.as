@@ -128,5 +128,12 @@ public class MediaBaseConfiguration {
         _appendRecording = value;
         return this;
     }
+    
+    internal var _audioOnly:Boolean = false;
+
+    public function audioOnly(value:Boolean):MediaBaseConfiguration {
+        _audioOnly = value;
+        return this;
+    }
 }
 }

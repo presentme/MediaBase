@@ -326,7 +326,7 @@ public class MediaBase extends Group {
             resize(this.width, this.height);
         }
         else {
-            attachCamera();
+            if(!configuration._audioOnly) attachCamera();
             setupMicrophone();
         }
         dispatchEvent(new Event(READY, true));
