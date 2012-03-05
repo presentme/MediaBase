@@ -66,9 +66,9 @@
                 </include-sources>
 
                 <!-- Third Party RSL linked libraries -->
-                <compiler.include-libraries dir="${lib.swcs}" append="true">
+                <compiler.external-library-path dir="${lib.swcs}" append="true">
                     <include name="as3-signals-v0.9-BETA.swc" />
-                </compiler.include-libraries>
+                </compiler.external-library-path>
 
             </compc>
 
